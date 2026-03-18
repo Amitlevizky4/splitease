@@ -4,7 +4,7 @@ import jwt from "jsonwebtoken";
 import { prisma } from "../index.js";
 
 const router = Router();
-const JWT_SECRET = process.env.JWT_SECRET || "splitease-dev-secret";
+const JWT_SECRET = process.env.JWT_SECRET || "splitease-dev-secret-local-only";
 const GOOGLE_CLIENT_ID = process.env.GOOGLE_CLIENT_ID || "";
 const googleClient = new OAuth2Client(GOOGLE_CLIENT_ID);
 
