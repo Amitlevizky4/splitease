@@ -1,8 +1,8 @@
 // In dev: Vite proxies /api to localhost:3001
 // In prod: VITE_API_URL points to the Render backend
-const API_BASE = import.meta.env.VITE_API_URL
-  ? `${import.meta.env.VITE_API_URL}/api`
-  : "/api";
+const API_BASE = import.meta.env.DEV
+  ? "/api"
+  : `${import.meta.env.VITE_API_URL || "https://splitease-e9ze.onrender.com"}/api`;
 
 function getToken(): string | null {
   return localStorage.getItem("splitease_token");
