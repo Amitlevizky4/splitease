@@ -30,8 +30,8 @@ export function LoginPage() {
                 if (response.credential) {
                   try {
                     await login(response.credential);
-                  } catch {
-                    setError("Login failed. Please try again.");
+                  } catch (err) {
+                    setError(err instanceof Error ? err.message : "Login failed. Please try again.");
                   }
                 }
               }}
