@@ -53,11 +53,25 @@ export interface MeResponse {
   user: { id: string; name: string; email: string; avatar: string };
 }
 
-export function loginWithGoogle(credential: string): Promise<AuthResponse> {
+export function loginWithGoogle(
+  credential: string,
+  inviteToken?: string,
+): Promise<AuthResponse> {
   return request("/auth/google", {
     method: "POST",
-    body: JSON.stringify({ credential }),
+    body: JSON.stringify({ credential, inviteToken }),
   });
+}
+
+export interface InviteInfo {
+  inviterName: string;
+  inviterAvatar: string;
+  groupName?: string;
+  email: string;
+}
+
+export function getInviteInfo(token: string): Promise<InviteInfo> {
+  return request(`/invitations/info/${token}`);
 }
 
 export function getMe(): Promise<MeResponse> {
@@ -229,11 +243,20 @@ export function settleAllPayments(
   });
 }
 
+// Accept invite (for already-logged-in users)
+export function acceptInvite(token: string) {
+  return request<{ status: string; message: string }>("/invitations/accept", {
+    method: "POST",
+    body: JSON.stringify({ token }),
+  });
+}
+
 // Invitations
 export function sendInvitation(data: { email: string; groupId?: string }) {
   return request<{
     status: string;
     message: string;
+    inviteLink?: string;
     user?: { id: string; name: string; email: string; avatar: string };
   }>("/invitations", {
     method: "POST",

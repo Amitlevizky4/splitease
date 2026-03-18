@@ -1,7 +1,9 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useStore } from "./store/useStore";
 import { useAuth } from "./hooks/useAuth";
 import { LoginPage } from "./components/LoginPage";
+import { InvitePage } from "./components/InvitePage";
+import { acceptInvite } from "./lib/api";
 import { Dashboard } from "./components/Dashboard";
 import { FriendsView } from "./components/FriendsView";
 import { FriendDetail } from "./components/FriendDetail";
@@ -23,18 +25,54 @@ import type { Expense } from "./types";
 
 type Tab = "dashboard" | "friends" | "groups" | "activity" | "account";
 
+function getInviteToken(): string | null {
+  const match = window.location.pathname.match(/^\/invite\/([a-f0-9]+)$/);
+  return match ? match[1] : null;
+}
+
 export default function App() {
   const { user: authUser, isAuthenticated } = useAuth();
+  const inviteToken = getInviteToken();
+
+  // Show invite page if URL is /invite/:token and user is not logged in
+  if (inviteToken && !isAuthenticated) {
+    return <InvitePage token={inviteToken} />;
+  }
 
   if (!isAuthenticated || !authUser) {
     return <LoginPage />;
   }
 
-  return <AuthenticatedApp key={authUser.id} authUserId={authUser.id} />;
+  return (
+    <AuthenticatedApp
+      key={authUser.id}
+      authUserId={authUser.id}
+      inviteToken={inviteToken}
+    />
+  );
 }
 
-function AuthenticatedApp({ authUserId }: { authUserId: string }) {
+function AuthenticatedApp({
+  authUserId,
+  inviteToken,
+}: {
+  authUserId: string;
+  inviteToken: string | null;
+}) {
   const [activeTab, setActiveTab] = useState<Tab>("dashboard");
+
+  // Accept invite if user opened an invite link while logged in
+  useEffect(() => {
+    if (!inviteToken) return;
+    acceptInvite(inviteToken)
+      .then(() => {
+        window.history.replaceState({}, "", "/");
+      })
+      .catch(() => {
+        // Invitation may already be accepted or invalid
+        window.history.replaceState({}, "", "/");
+      });
+  }, [inviteToken]);
   const [showAddExpense, setShowAddExpense] = useState(false);
   const [showSettleUp, setShowSettleUp] = useState(false);
   const [selectedFriend, setSelectedFriend] = useState<string | null>(null);

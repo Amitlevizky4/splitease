@@ -238,7 +238,10 @@ export function useStore(authUserId: string) {
   );
 
   const inviteFriend = useCallback(
-    async (email: string, groupId?: string) => {
+    async (
+      email: string,
+      groupId?: string,
+    ): Promise<{ status: string; message: string; inviteLink?: string }> => {
       const result = await api.sendInvitation({ email, groupId });
       if (result.status === "added") {
         await refreshData();

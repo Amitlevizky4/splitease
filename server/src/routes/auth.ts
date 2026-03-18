@@ -10,7 +10,7 @@ const googleClient = new OAuth2Client(GOOGLE_CLIENT_ID);
 
 router.post("/google", async (req: Request, res: Response) => {
   try {
-    const { credential } = req.body;
+    const { credential, inviteToken } = req.body;
     if (!credential) {
       res.status(400).json({ error: "Missing Google credential" });
       return;
@@ -88,6 +88,51 @@ router.post("/google", async (req: Request, res: Response) => {
         where: { id: googleId },
         data: { name, avatar, email },
       });
+    }
+
+    // If an invite token was provided, accept that specific invitation
+    if (inviteToken && typeof inviteToken === "string") {
+      const invitation = await prisma.invitation.findUnique({
+        where: { token: inviteToken },
+      });
+      if (invitation && invitation.status === "pending") {
+        // Create bidirectional friendship with inviter
+        await prisma.friendship
+          .create({
+            data: { userId: invitation.inviterId, friendId: user.id },
+          })
+          .catch(() => {
+            /* already exists */
+          });
+        await prisma.friendship
+          .create({
+            data: { userId: user.id, friendId: invitation.inviterId },
+          })
+          .catch(() => {
+            /* already exists */
+          });
+
+        // Add to group if specified
+        if (invitation.groupId) {
+          await prisma.groupMember
+            .create({
+              data: {
+                groupId: invitation.groupId,
+                userId: user.id,
+                role: "expense_only",
+              },
+            })
+            .catch(() => {
+              /* already a member */
+            });
+        }
+
+        // Mark invitation as accepted
+        await prisma.invitation.update({
+          where: { id: invitation.id },
+          data: { status: "accepted" },
+        });
+      }
     }
 
     // Generate session JWT

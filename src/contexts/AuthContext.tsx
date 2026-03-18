@@ -50,8 +50,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       .finally(() => setLoading(false));
   }, []);
 
-  const login = useCallback(async (googleCredential: string) => {
-    const { token, user: u } = await apiLogin(googleCredential);
+  const login = useCallback(async (googleCredential: string, inviteToken?: string) => {
+    const { token, user: u } = await apiLogin(googleCredential, inviteToken);
     setToken(token);
     const authUser: User = {
       id: u.id,

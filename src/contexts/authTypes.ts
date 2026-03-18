@@ -4,7 +4,7 @@ import type { User } from "@/types";
 export interface AuthContextType {
   user: User | null;
   isAuthenticated: boolean;
-  login: (googleCredential: string) => Promise<void>;
+  login: (googleCredential: string, inviteToken?: string) => Promise<void>;
   logout: () => void;
 }
 

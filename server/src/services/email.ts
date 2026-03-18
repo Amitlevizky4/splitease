@@ -1,28 +1,32 @@
-import { Resend } from 'resend'
+import { Resend } from "resend";
 
-const RESEND_API_KEY = process.env.RESEND_API_KEY || ''
-const APP_URL = process.env.APP_URL || 'http://localhost:5173'
+const RESEND_API_KEY = process.env.RESEND_API_KEY || "";
 
-let resend: Resend | null = null
+let resend: Resend | null = null;
 if (RESEND_API_KEY) {
-  resend = new Resend(RESEND_API_KEY)
+  resend = new Resend(RESEND_API_KEY);
 }
 
 export async function sendInvitationEmail(
   toEmail: string,
   inviterName: string,
   groupName?: string,
+  inviteLink?: string,
 ): Promise<boolean> {
   if (!resend) {
-    console.log(`[Email Mock] Invitation to ${toEmail} from ${inviterName}${groupName ? ` for group "${groupName}"` : ''}`)
-    console.log(`[Email Mock] Link: ${APP_URL}`)
-    return true
+    console.log(
+      `[Email Mock] Invitation to ${toEmail} from ${inviterName}${groupName ? ` for group "${groupName}"` : ""}`,
+    );
+    console.log(`[Email Mock] Link: ${inviteLink}`);
+    return false;
   }
 
   try {
     const subject = groupName
       ? `${inviterName} invited you to join "${groupName}" on SplitEase`
-      : `${inviterName} wants to connect with you on SplitEase`
+      : `${inviterName} wants to connect with you on SplitEase`;
+
+    const linkUrl = inviteLink || "https://splitease-inky.vercel.app";
 
     const html = `
       <div style="font-family: Arial, sans-serif; max-width: 480px; margin: 0 auto; padding: 32px;">
@@ -31,7 +35,7 @@ export async function sendInvitationEmail(
 
         <div style="background: #f9fafb; border-radius: 12px; padding: 24px; margin-bottom: 24px;">
           <p style="font-size: 16px; color: #1f2937; margin: 0;">
-            <strong>${inviterName}</strong> has invited you to ${groupName ? `join the group <strong>"${groupName}"</strong> on` : 'connect on'} SplitEase.
+            <strong>${inviterName}</strong> has invited you to ${groupName ? `join the group <strong>"${groupName}"</strong> on` : "connect on"} SplitEase.
           </p>
         </div>
 
@@ -39,7 +43,7 @@ export async function sendInvitationEmail(
           SplitEase makes it easy to split bills, track shared expenses, and settle up with friends.
         </p>
 
-        <a href="${APP_URL}"
+        <a href="${linkUrl}"
            style="display: inline-block; background: #14b8a6; color: white; text-decoration: none; padding: 12px 32px; border-radius: 8px; font-weight: bold; font-size: 14px;">
           Join SplitEase
         </a>
@@ -48,18 +52,18 @@ export async function sendInvitationEmail(
           Sign in with your Google account (${toEmail}) to accept this invitation.
         </p>
       </div>
-    `
+    `;
 
     await resend.emails.send({
-      from: 'SplitEase <onboarding@resend.dev>',
+      from: "SplitEase <onboarding@resend.dev>",
       to: toEmail,
       subject,
       html,
-    })
+    });
 
-    return true
+    return true;
   } catch (error) {
-    console.error('Failed to send email:', error)
-    return false
+    console.error("Failed to send email:", error);
+    return false;
   }
 }
