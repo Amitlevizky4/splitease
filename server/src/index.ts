@@ -80,4 +80,18 @@ app.get("/api/health", (_req, res) => {
 
 app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
+
+  // Keep-alive: ping self every 14 minutes to prevent Render free tier cold starts
+  if (process.env.NODE_ENV === "production" && process.env.RENDER_EXTERNAL_URL) {
+    const url = `${process.env.RENDER_EXTERNAL_URL}/api/health`;
+    setInterval(
+      () => {
+        fetch(url).catch(() => {
+          /* ignore */
+        });
+      },
+      14 * 60 * 1000,
+    );
+    console.log(`Keep-alive pinging ${url} every 14 minutes`);
+  }
 });

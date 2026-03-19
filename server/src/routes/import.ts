@@ -49,58 +49,62 @@ router.post("/splitwise", async (req: AuthRequest, res: Response) => {
 
     const memberIds = group.members.map((m) => m.userId);
 
-    let createdCount = 0;
-
-    for (const exp of expenses) {
+    // Validate all expenses upfront
+    const validExpenses = expenses.filter((exp) => {
       const parsedDate = new Date(exp.date);
-      if (isNaN(parsedDate.getTime())) continue;
-      if (typeof exp.amount !== "number" || exp.amount <= 0) continue;
-
-      // Verify all participants are group members
+      if (isNaN(parsedDate.getTime())) return false;
+      if (typeof exp.amount !== "number" || exp.amount <= 0) return false;
       const allParticipants = [exp.paidBy, ...exp.splits.map((s) => s.userId)];
-      const allInGroup = allParticipants.every((pid) => memberIds.includes(pid));
-      if (!allInGroup) continue;
+      if (!allParticipants.every((pid) => memberIds.includes(pid))) return false;
+      if (exp.splits.filter((s) => s.amount > 0).length === 0) return false;
+      return true;
+    });
 
-      // Filter out splits with zero amount
-      const validSplits = exp.splits.filter((s) => s.amount > 0);
-      if (validSplits.length === 0) continue;
+    // Batch create in a single transaction
+    const createdCount = await prisma.$transaction(async (tx) => {
+      let count = 0;
+      for (const exp of validExpenses) {
+        const parsedDate = new Date(exp.date);
+        const validSplits = exp.splits.filter((s) => s.amount > 0);
 
-      await prisma.expense.create({
-        data: {
-          description: String(exp.description).slice(0, 200),
-          amount: exp.amount,
-          currency: exp.currency,
-          category: exp.category,
-          date: parsedDate,
-          paidBy: exp.paidBy,
-          splitMethod: exp.splitMethod,
-          groupId,
-          splits: {
-            create: validSplits.map((s) => ({
-              userId: s.userId,
-              amount: s.amount,
-            })),
+        await tx.expense.create({
+          data: {
+            description: String(exp.description).slice(0, 200),
+            amount: exp.amount,
+            currency: exp.currency,
+            category: exp.category,
+            date: parsedDate,
+            paidBy: exp.paidBy,
+            splitMethod: exp.splitMethod,
+            groupId,
+            splits: {
+              create: validSplits.map((s) => ({
+                userId: s.userId,
+                amount: s.amount,
+              })),
+            },
           },
-        },
-      });
+        });
 
-      await prisma.activity.create({
-        data: {
-          type: "expense",
-          description: `Imported "${String(exp.description).slice(0, 100)}" in ${group.name}`,
-          amount: exp.amount,
-          currency: exp.currency,
-          date: parsedDate,
-          groupId,
-          userId,
-          relatedUsers: {
-            create: validSplits.map((s) => ({ userId: s.userId })),
+        await tx.activity.create({
+          data: {
+            type: "expense",
+            description: `Imported "${String(exp.description).slice(0, 100)}" in ${group.name}`,
+            amount: exp.amount,
+            currency: exp.currency,
+            date: parsedDate,
+            groupId,
+            userId,
+            relatedUsers: {
+              create: validSplits.map((s) => ({ userId: s.userId })),
+            },
           },
-        },
-      });
+        });
 
-      createdCount++;
-    }
+        count++;
+      }
+      return count;
+    });
 
     res.json({ count: createdCount });
   } catch (error) {

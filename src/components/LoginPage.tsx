@@ -1,10 +1,19 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { GoogleLogin } from "@react-oauth/google";
 import { useAuth } from "@/hooks/useAuth";
+
+const API_BASE = import.meta.env.DEV
+  ? "/api"
+  : `${import.meta.env.VITE_API_URL || "https://splitease-e9ze.onrender.com"}/api`;
 
 export function LoginPage() {
   const { login } = useAuth();
   const [error, setError] = useState<string | null>(null);
+
+  // Warm up the server while user sees the login page
+  useEffect(() => {
+    fetch(`${API_BASE}/health`).catch(() => {});
+  }, []);
 
   return (
     <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4">
