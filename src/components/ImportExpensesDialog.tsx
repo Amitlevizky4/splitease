@@ -440,7 +440,7 @@ export function ImportExpensesDialog({
                           className="inline-flex items-center gap-1 text-xs bg-gray-100 rounded-full px-2 py-0.5"
                         >
                           <Avatar
-                            src={user?.avatar}
+                            src={user?.avatar ?? "👤"}
                             name={user?.name ?? "?"}
                             size="sm"
                           />
