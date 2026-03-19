@@ -172,6 +172,7 @@ function AuthenticatedApp({
             onRemoveExpense={store.removeExpense}
             selectedGroupId={selectedGroupId}
             onSelectGroup={setSelectedGroupId}
+            onImportComplete={store.refreshData}
           />
         );
       case "activity":
@@ -213,16 +214,18 @@ function AuthenticatedApp({
         {renderContent()}
       </main>
 
-      {/* FAB - Add Expense */}
-      <button
-        onClick={() => {
-          setEditingExpense(null);
-          setShowAddExpense(true);
-        }}
-        className="fixed bottom-24 right-4 md:right-auto md:left-1/2 md:translate-x-[calc(256px-28px)] w-14 h-14 bg-teal text-white rounded-full shadow-lg flex items-center justify-center hover:bg-teal-dark transition-colors z-20"
-      >
-        <Plus size={28} />
-      </button>
+      {/* FAB - Add Expense (only on group detail page) */}
+      {activeTab === "groups" && selectedGroupId && (
+        <button
+          onClick={() => {
+            setEditingExpense(null);
+            setShowAddExpense(true);
+          }}
+          className="fixed bottom-24 right-4 md:right-auto md:left-1/2 md:translate-x-[calc(256px-28px)] w-14 h-14 bg-teal text-white rounded-full shadow-lg flex items-center justify-center hover:bg-teal-dark transition-colors z-20"
+        >
+          <Plus size={28} />
+        </button>
+      )}
 
       {/* Bottom Navigation */}
       <nav className="fixed bottom-0 left-0 right-0 max-w-lg mx-auto bg-white border-t border-gray-200 z-30">

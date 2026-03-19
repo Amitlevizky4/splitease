@@ -252,6 +252,27 @@ export function acceptInvite(token: string) {
 }
 
 // Invitations
+// Import
+export function importSplitwiseExpenses(data: {
+  groupId: string;
+  expenses: Array<{
+    description: string;
+    amount: number;
+    currency: string;
+    category: string;
+    date: string;
+    paidBy: string;
+    splits: Array<{ userId: string; amount: number }>;
+    splitMethod: string;
+  }>;
+}) {
+  return request<{ count: number }>("/import/splitwise", {
+    method: "POST",
+    body: JSON.stringify(data),
+  });
+}
+
+// Invitations
 export function sendInvitation(data: { email: string; groupId?: string }) {
   return request<{
     status: string;

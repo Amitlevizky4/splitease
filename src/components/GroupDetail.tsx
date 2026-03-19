@@ -1,10 +1,12 @@
 import { useState } from 'react'
 import { Card } from './ui/Card'
+import { Button } from './ui/Button'
 import { formatCurrency, formatDate, convertCurrency, currencySymbols } from '@/lib/utils'
-import { ArrowLeft, Pencil, Trash2, ArrowRight, Info, X } from 'lucide-react'
+import { ArrowLeft, Pencil, Trash2, ArrowRight, Info, X, Upload } from 'lucide-react'
 import type { User, Group, Expense } from '@/types'
 import { categoryIcons } from '@/data/mockData'
 import { Avatar } from './ui/Avatar'
+import { ImportExpensesDialog } from './ImportExpensesDialog'
 
 interface GroupDebt {
   from: string
@@ -22,11 +24,13 @@ interface GroupDetailProps {
   onEditExpense: (expense: Expense) => void
   onRemoveExpense: (id: string) => void
   groupDebts: GroupDebt[]
+  onImportComplete: () => void
 }
 
-export function GroupDetail({ users, group, expenses, currentUserId, onBack, onEditExpense, onRemoveExpense, groupDebts }: GroupDetailProps) {
+export function GroupDetail({ users, group, expenses, currentUserId, onBack, onEditExpense, onRemoveExpense, groupDebts, onImportComplete }: GroupDetailProps) {
   const members = group.memberIds.map(id => users.find(u => u.id === id)).filter(Boolean)
   const [showExplanation, setShowExplanation] = useState<number | null>(null)
+  const [showImport, setShowImport] = useState(false)
   const myRole = group.memberRoles[currentUserId] ?? 'expense_only'
   const isAdmin = myRole === 'admin'
 
@@ -53,6 +57,11 @@ export function GroupDetail({ users, group, expenses, currentUserId, onBack, onE
             </span>
           ))}
         </div>
+        {isAdmin && (
+          <Button size="sm" className="mt-3" onClick={() => setShowImport(true)}>
+            <Upload size={14} className="mr-1" /> Import from Splitwise
+          </Button>
+        )}
       </Card>
 
       {/* Smart Settle Section */}
@@ -171,6 +180,15 @@ export function GroupDetail({ users, group, expenses, currentUserId, onBack, onE
           )}
         </div>
       </Card>
+
+      <ImportExpensesDialog
+        open={showImport}
+        onOpenChange={setShowImport}
+        group={group}
+        users={users}
+        currentUserId={currentUserId}
+        onImportComplete={onImportComplete}
+      />
     </div>
   )
 }
