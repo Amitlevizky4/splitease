@@ -102,14 +102,15 @@ function parseSplitwiseCSV(text: string): {
 
     const shares: Record<string, number> = {};
     let payerName = "";
-    let mostNegative = 0;
+    let mostPositive = 0;
 
     for (let j = 0; j < csvNames.length; j++) {
       const value = parseFloat(row[5 + j]);
       if (isNaN(value)) continue;
 
-      if (value < mostNegative) {
-        mostNegative = value;
+      // In Splitwise CSV: positive = person is owed (they paid), negative = person owes
+      if (value > mostPositive) {
+        mostPositive = value;
         payerName = csvNames[j];
       }
       shares[csvNames[j]] = value;
@@ -247,11 +248,11 @@ export function ImportExpensesDialog({
 
         let shareAmount: number;
         if (csvName === exp.payerName) {
-          // Payer's share = cost + their negative value (e.g., 17 + (-8.50) = 8.50)
-          shareAmount = exp.amount + value;
+          // Payer's share = cost - their positive value (e.g., 17 - 8.50 = 8.50)
+          shareAmount = exp.amount - value;
         } else {
-          // Other people's share is their positive value
-          shareAmount = value;
+          // Other people's share is the absolute value of their negative number
+          shareAmount = Math.abs(value);
         }
 
         if (Math.abs(shareAmount) < 0.01) continue;
