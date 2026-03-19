@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { Card } from './ui/Card'
 import { Button } from './ui/Button'
+import { Dialog } from './ui/Dialog'
 import { formatCurrency, formatDate, convertCurrency, currencySymbols } from '@/lib/utils'
 import { ArrowLeft, Pencil, Trash2, ArrowRight, Info, X, Upload } from 'lucide-react'
 import type { User, Group, Expense } from '@/types'
@@ -31,6 +32,7 @@ export function GroupDetail({ users, group, expenses, currentUserId, onBack, onE
   const members = group.memberIds.map(id => users.find(u => u.id === id)).filter(Boolean)
   const [showExplanation, setShowExplanation] = useState<number | null>(null)
   const [showImport, setShowImport] = useState(false)
+  const [confirmDeleteId, setConfirmDeleteId] = useState<string | null>(null)
   const myRole = group.memberRoles[currentUserId] ?? 'expense_only'
   const isAdmin = myRole === 'admin'
 
@@ -163,7 +165,7 @@ export function GroupDetail({ users, group, expenses, currentUserId, onBack, onE
                         <Pencil size={13} className="text-charcoal-light" />
                       </button>
                       <button
-                        onClick={() => onRemoveExpense(expense.id)}
+                        onClick={() => setConfirmDeleteId(expense.id)}
                         className="p-1 rounded hover:bg-red-50 transition-colors"
                         title="Delete expense"
                       >
@@ -189,6 +191,31 @@ export function GroupDetail({ users, group, expenses, currentUserId, onBack, onE
         currentUserId={currentUserId}
         onImportComplete={onImportComplete}
       />
+
+      <Dialog
+        open={!!confirmDeleteId}
+        onOpenChange={() => setConfirmDeleteId(null)}
+        title="Delete Expense"
+      >
+        <div className="space-y-4">
+          <p className="text-sm text-charcoal">
+            Are you sure you want to delete this expense?
+          </p>
+          <div className="flex gap-2">
+            <Button variant="secondary" className="flex-1" onClick={() => setConfirmDeleteId(null)}>
+              Cancel
+            </Button>
+            <Button variant="danger" className="flex-1" onClick={() => {
+              if (confirmDeleteId) {
+                onRemoveExpense(confirmDeleteId)
+                setConfirmDeleteId(null)
+              }
+            }}>
+              Delete
+            </Button>
+          </div>
+        </div>
+      </Dialog>
     </div>
   )
 }

@@ -66,7 +66,7 @@ router.get('/', authMiddleware, async (req: AuthRequest, res: Response) => {
         ],
       },
       include: { splits: true },
-      orderBy: { date: 'desc' },
+      orderBy: [{ date: 'desc' }, { createdAt: 'desc' }],
     })
 
     const formattedExpenses = expenses.map(e => ({

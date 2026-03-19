@@ -1,5 +1,7 @@
+import { useState } from 'react'
 import { Card } from './ui/Card'
 import { Button } from './ui/Button'
+import { Dialog } from './ui/Dialog'
 import { formatCurrency } from '@/lib/utils'
 import { TrendingUp, TrendingDown, Wallet, ArrowRight, CheckCircle } from 'lucide-react'
 import type { User, Balance } from '@/types'
@@ -17,10 +19,12 @@ interface DashboardProps {
 }
 
 export function Dashboard({ users, totalBalance, totalOwed, totalOwe, balances, simplifiedDebts, onFriendClick, onSettleAll }: DashboardProps) {
+  const [showSettleAllConfirm, setShowSettleAllConfirm] = useState(false)
   const getUserName = (id: string) => users.find(u => u.id === id)?.name ?? 'Unknown'
   const getUserAvatar = (id: string) => users.find(u => u.id === id)?.avatar ?? '👤'
 
   const handleSettleAll = async () => {
+    setShowSettleAllConfirm(false)
     const count = await onSettleAll()
     if (count === 0) {
       alert('Nothing to settle - all balances are already zero!')
@@ -93,7 +97,7 @@ export function Dashboard({ users, totalBalance, totalOwed, totalOwe, balances, 
               <h3 className="font-semibold text-charcoal">Simplified Debts</h3>
               <p className="text-xs text-charcoal-light">Optimized payments to settle all balances (in USD)</p>
             </div>
-            <Button size="sm" onClick={handleSettleAll}>
+            <Button size="sm" onClick={() => setShowSettleAllConfirm(true)}>
               <CheckCircle size={14} className="mr-1" /> Settle All
             </Button>
           </div>
@@ -111,6 +115,26 @@ export function Dashboard({ users, totalBalance, totalOwed, totalOwe, balances, 
           </div>
         </Card>
       )}
+
+      <Dialog
+        open={showSettleAllConfirm}
+        onOpenChange={setShowSettleAllConfirm}
+        title="Settle All Debts"
+      >
+        <div className="space-y-4">
+          <p className="text-sm text-charcoal">
+            Are you sure you want to record payments for all simplified debts? This will mark all balances as settled.
+          </p>
+          <div className="flex gap-2">
+            <Button variant="secondary" className="flex-1" onClick={() => setShowSettleAllConfirm(false)}>
+              Cancel
+            </Button>
+            <Button className="flex-1" onClick={handleSettleAll}>
+              Settle All
+            </Button>
+          </div>
+        </div>
+      </Dialog>
     </div>
   )
 }

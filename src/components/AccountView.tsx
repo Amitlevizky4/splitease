@@ -1,26 +1,39 @@
-import { Card } from './ui/Card'
-import { useAuth } from '@/hooks/useAuth'
-import { formatCurrency } from '@/lib/utils'
-import { Settings, Bell, HelpCircle, LogOut } from 'lucide-react'
+import { useState } from "react";
+import { Card } from "./ui/Card";
+import { Dialog } from "./ui/Dialog";
+import { Button } from "./ui/Button";
+import { useAuth } from "@/hooks/useAuth";
+import { formatCurrency } from "@/lib/utils";
+import { Settings, Bell, HelpCircle, LogOut } from "lucide-react";
 
 interface AccountViewProps {
-  totalBalance: number
-  totalOwed: number
-  totalOwe: number
+  totalBalance: number;
+  totalOwed: number;
+  totalOwe: number;
 }
 
-export function AccountView({ totalBalance, totalOwed, totalOwe }: AccountViewProps) {
-  const { user, logout } = useAuth()
+export function AccountView({
+  totalBalance,
+  totalOwed,
+  totalOwe,
+}: AccountViewProps) {
+  const { user, logout } = useAuth();
+  const [showLogoutConfirm, setShowLogoutConfirm] = useState(false);
 
-  if (!user) return null
+  if (!user) return null;
 
-  const isGooglePicture = user.avatar.startsWith('http')
+  const isGooglePicture = user.avatar.startsWith("http");
 
   return (
     <div className="space-y-4 animate-fade-in">
       <Card className="p-6 text-center">
         {isGooglePicture ? (
-          <img src={user.avatar} alt={user.name} className="w-16 h-16 rounded-full mx-auto" referrerPolicy="no-referrer" />
+          <img
+            src={user.avatar}
+            alt={user.name}
+            className="w-16 h-16 rounded-full mx-auto"
+            referrerPolicy="no-referrer"
+          />
         ) : (
           <span className="text-5xl">{user.avatar}</span>
         )}
@@ -30,8 +43,11 @@ export function AccountView({ totalBalance, totalOwed, totalOwe }: AccountViewPr
         <div className="grid grid-cols-3 gap-3 mt-4 pt-4 border-t border-gray-100">
           <div>
             <p className="text-xs text-charcoal-light">Balance</p>
-            <p className={`font-bold ${totalBalance >= 0 ? 'text-teal' : 'text-danger'}`}>
-              {totalBalance >= 0 ? '+' : '-'}{formatCurrency(totalBalance)}
+            <p
+              className={`font-bold ${totalBalance >= 0 ? "text-teal" : "text-danger"}`}
+            >
+              {totalBalance >= 0 ? "+" : "-"}
+              {formatCurrency(totalBalance)}
             </p>
           </div>
           <div>
@@ -47,10 +63,14 @@ export function AccountView({ totalBalance, totalOwed, totalOwe }: AccountViewPr
 
       <Card className="divide-y divide-gray-100">
         {[
-          { icon: Settings, label: 'Settings', onClick: undefined },
-          { icon: Bell, label: 'Notifications', onClick: undefined },
-          { icon: HelpCircle, label: 'Help & Support', onClick: undefined },
-          { icon: LogOut, label: 'Sign Out', onClick: logout },
+          { icon: Settings, label: "Settings", onClick: undefined },
+          { icon: Bell, label: "Notifications", onClick: undefined },
+          { icon: HelpCircle, label: "Help & Support", onClick: undefined },
+          {
+            icon: LogOut,
+            label: "Sign Out",
+            onClick: () => setShowLogoutConfirm(true),
+          },
         ].map(({ icon: Icon, label, onClick }) => (
           <button
             key={label}
@@ -62,6 +82,30 @@ export function AccountView({ totalBalance, totalOwed, totalOwe }: AccountViewPr
           </button>
         ))}
       </Card>
+
+      <Dialog
+        open={showLogoutConfirm}
+        onOpenChange={setShowLogoutConfirm}
+        title="Sign Out"
+      >
+        <div className="space-y-4">
+          <p className="text-sm text-charcoal">
+            Are you sure you want to sign out?
+          </p>
+          <div className="flex gap-2">
+            <Button
+              variant="secondary"
+              className="flex-1"
+              onClick={() => setShowLogoutConfirm(false)}
+            >
+              Cancel
+            </Button>
+            <Button variant="danger" className="flex-1" onClick={logout}>
+              Sign Out
+            </Button>
+          </div>
+        </div>
+      </Dialog>
     </div>
-  )
+  );
 }

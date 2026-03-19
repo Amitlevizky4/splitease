@@ -1,10 +1,10 @@
-import { useState } from 'react'
-import { Dialog } from './ui/Dialog'
-import { Button } from './ui/Button'
-import { Input } from './ui/Input'
-import type { User, Balance, Currency } from '@/types'
-import { Avatar } from './ui/Avatar'
-import { formatCurrency, currencySymbols, convertFromUSD } from '@/lib/utils'
+import { useState } from "react";
+import { Dialog } from "./ui/Dialog";
+import { Button } from "./ui/Button";
+import { Input } from "./ui/Input";
+import type { User, Balance, Currency } from "@/types";
+import { Avatar } from "./ui/Avatar";
+import { formatCurrency, currencySymbols, convertFromUSD } from "@/lib/utils";
 
 interface SettleUpDialogProps {
   open: boolean
@@ -44,17 +44,25 @@ export function SettleUpDialog({ open, onOpenChange, users, balances, onSettleUp
     }
   }
 
+  const [showConfirm, setShowConfirm] = useState(false);
+
   const handleSubmit = () => {
-    const amt = parseFloat(amount)
-    if (!selectedFriend || isNaN(amt) || amt <= 0) return
-    onSettleUp(selectedFriend, amt, currency)
-    setSelectedFriend('')
-    setAmount('')
-    setCurrency('USD')
-    onOpenChange(false)
-  }
+    setShowConfirm(true);
+  };
+
+  const handleConfirmedSubmit = () => {
+    const amt = parseFloat(amount);
+    if (!selectedFriend || isNaN(amt) || amt <= 0) return;
+    onSettleUp(selectedFriend, amt, currency);
+    setSelectedFriend("");
+    setAmount("");
+    setCurrency("USD");
+    setShowConfirm(false);
+    onOpenChange(false);
+  };
 
   return (
+    <>
     <Dialog open={open} onOpenChange={onOpenChange} title="Settle Up">
       <div className="space-y-4">
         {oweBalances.length === 0 ? (
@@ -125,5 +133,24 @@ export function SettleUpDialog({ open, onOpenChange, users, balances, onSettleUp
         )}
       </div>
     </Dialog>
+
+    <Dialog open={showConfirm} onOpenChange={setShowConfirm} title="Confirm Payment">
+      <div className="space-y-4">
+        <p className="text-sm text-charcoal">
+          Are you sure you want to record a payment of{" "}
+          <strong>{currencySymbols[currency]}{amount}</strong> to{" "}
+          <strong>{users.find(u => u.id === selectedFriend)?.name}</strong>?
+        </p>
+        <div className="flex gap-2">
+          <Button variant="secondary" className="flex-1" onClick={() => setShowConfirm(false)}>
+            Cancel
+          </Button>
+          <Button className="flex-1" onClick={handleConfirmedSubmit}>
+            Confirm
+          </Button>
+        </div>
+      </div>
+    </Dialog>
+    </>
   )
 }
