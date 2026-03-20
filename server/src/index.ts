@@ -10,6 +10,7 @@ import { expensesRouter } from "./routes/expenses.js";
 import { paymentsRouter } from "./routes/payments.js";
 import { invitationsRouter } from "./routes/invitations.js";
 import { importRouter } from "./routes/import.js";
+import { ratesRouter } from "./routes/rates.js";
 
 // Require JWT_SECRET in production
 if (process.env.NODE_ENV === "production" && !process.env.JWT_SECRET) {
@@ -72,6 +73,7 @@ app.use("/api/expenses", expensesRouter);
 app.use("/api/payments", paymentsRouter);
 app.use("/api/invitations", invitationsRouter);
 app.use("/api/import", importRouter);
+app.use("/api/rates", ratesRouter);
 
 // Health check
 app.get("/api/health", (_req, res) => {

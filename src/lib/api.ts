@@ -252,6 +252,11 @@ export function acceptInvite(token: string) {
 }
 
 // Invitations
+// Exchange rates
+export function fetchExchangeRates() {
+  return request<{ base: string; rates: Record<string, number> }>("/rates");
+}
+
 // Import
 export function importSplitwiseExpenses(data: {
   groupId: string;

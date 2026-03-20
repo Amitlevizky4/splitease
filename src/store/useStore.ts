@@ -8,7 +8,12 @@ import type {
   Balance,
   Currency,
 } from "../types";
-import { convertToUSD, convertCurrency, formatCurrency } from "../lib/utils";
+import {
+  convertToUSD,
+  convertCurrency,
+  formatCurrency,
+  updateExchangeRates,
+} from "../lib/utils";
 import * as api from "../lib/api";
 
 export function useStore(authUserId: string) {
@@ -68,9 +73,15 @@ export function useStore(authUserId: string) {
     }
   }, []);
 
-  // Load data on mount
+  // Load exchange rates and data on mount
   useEffect(() => {
-    refreshData();
+    api
+      .fetchExchangeRates()
+      .then(({ rates }) => updateExchangeRates(rates))
+      .catch(() => {
+        /* use fallback rates */
+      })
+      .finally(() => refreshData());
   }, [refreshData]);
 
   const getUserName = useCallback(
