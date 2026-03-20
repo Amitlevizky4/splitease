@@ -1,73 +1,66 @@
-# React + TypeScript + Vite
+# SplitEase
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+A full-stack expense-sharing app (Splitwise clone) built with React, Express, and PostgreSQL.
 
-Currently, two official plugins are available:
+**Live**: https://splitease-inky.vercel.app
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+## Features
 
-## React Compiler
+- Google OAuth sign-in
+- Create groups with custom emoji, currency, and member roles
+- Add expenses with multiple split methods (equal, exact, percentage)
+- Multi-currency support (USD, EUR, GBP, JPY, ILS, and more)
+- Smart debt simplification algorithm
+- Settle up with friends
+- Invite friends via shareable links
+- Import expenses from Splitwise CSV exports
+- Activity timeline
+- Mobile-first responsive design
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+## Tech Stack
 
-## Expanding the ESLint configuration
+- **Frontend**: React 19, TypeScript, Vite, Tailwind CSS, Radix UI
+- **Backend**: Express 5, Prisma, PostgreSQL (Neon)
+- **Auth**: Google OAuth + JWT
+- **Deployment**: Vercel (frontend) + Render (backend)
 
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
+## Getting Started
 
-```js
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
+### Prerequisites
 
-      // Remove tseslint.configs.recommended and replace with this
-      tseslint.configs.recommendedTypeChecked,
-      // Alternatively, use this for stricter rules
-      tseslint.configs.strictTypeChecked,
-      // Optionally, add this for stylistic rules
-      tseslint.configs.stylisticTypeChecked,
+- Node.js 20+
+- PostgreSQL database (or Neon account)
+- Google OAuth client ID
 
-      // Other configs...
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+### Setup
+
+```bash
+# Clone the repo
+git clone https://github.com/Amitlevizky4/splitease.git
+cd splitease
+
+# Install dependencies
+npm install
+cd server && npm install && cd ..
+
+# Set up environment variables
+cp .env.example .env          # Add VITE_GOOGLE_CLIENT_ID
+cp server/.env.example server/.env  # Add DATABASE_URL, JWT_SECRET, GOOGLE_CLIENT_ID
+
+# Push database schema
+cd server && npx prisma db push && cd ..
+
+# Run development servers
+npm run dev:all
 ```
 
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
+Frontend runs on http://localhost:5173, backend on http://localhost:3001.
 
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
+## Project Structure
 
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs['recommended-typescript'],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
 ```
+src/           # React frontend (components, store, API client)
+server/        # Express backend (routes, middleware, Prisma)
+```
+
+See [CLAUDE.md](CLAUDE.md) for detailed architecture documentation.
